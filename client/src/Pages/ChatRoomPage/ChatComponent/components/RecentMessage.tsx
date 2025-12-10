@@ -1,0 +1,179 @@
+import { toast } from "react-toastify";
+import styled from "styled-components";
+import { useDispatch } from "react-redux";
+import axios, { AxiosError } from "axios";
+import { useEffect, useState } from "react";
+import type { AppDispatch } from "./../../../../Store";
+import {
+  showActiveRoom,
+  showActiveUserPage,
+  setSelectedUserDetails,
+} from "../../../../Feature/userSlice";
+
+const url = import.meta.env.VITE_API_URL;
+
+interface chatUi {
+  userId: string;
+  username: string;
+  userImage: string;
+  isOnline: boolean;
+  lastMessage: string;
+  lastMessageTime: string;
+}
+
+const RecentMessage = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [message, setMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [recentChats, setRecentChats] = useState<chatUi[]>([]);
+
+  const fetchRecentChats = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${url}/users/all-chattedUsers`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const { data } = res;
+
+      if (data.length === 0) {
+        setMessage("No recent chats found");
+      }
+
+      setRecentChats(data);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      // ✅ Error handling
+      if (error.response) {
+        toast.error(
+          error.response.data.message ||
+            "Invalid credentials cannot fetch chats"
+        );
+      } else if (error.request) {
+        toast.error("No response from server. Please try again.");
+      } else {
+        toast.error("Network error. Please try again.");
+      }
+    } finally {
+      setMessage("");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentChats();
+  }, []);
+
+  return (
+    <Wrapper>
+      <div className="h-[76vh] px-[0.7rem] md:px-4 py-2 overflow-y-scroll pb-4">
+        {loading ? (
+          <h2 className="h-[100px] font-bold text-[1.1rem] flex items-center justify-center loading-effect">
+            Loading chats........
+          </h2>
+        ) : message ? (
+          <div className="flex flex-col items-center">
+            <h2 className="h-[100px] font-bold text-[1.1rem] flex items-center justify-center text-red-500">
+              No Recent Chats........
+            </h2>
+            <button
+              className="w-[85%] md:w-[60%] text-[0.95rem] md:text-[1rem] text-gray-400 font-bold shadow shadow-gray-200  px-4 py-[0.4rem] rounded-[15px] border-gray-400   cursor-pointer transition duration-300 hover:bg-orange-700 hover:text-white"
+              onClick={() => dispatch(showActiveUserPage())}
+            >
+              See active users
+            </button>
+          </div>
+        ) : (
+          recentChats.map(
+            ({
+              userId,
+              userImage,
+              username,
+              lastMessage,
+              lastMessageTime,
+              isOnline,
+            }) => {
+              return (
+                <div
+                  className="flex items-center gap-2 py-2 cursor-pointer"
+                  key={userId}
+                  onClick={() => {
+                    dispatch(
+                      setSelectedUserDetails({
+                        id: userId,
+                        name: username,
+                        status: isOnline,
+                        image: userImage,
+                      })
+                    );
+                    dispatch(showActiveRoom());
+                  }}
+                >
+                  <div className="w-[55px] h-[55px]  md:w-[65px] md:h-[65px] rounded-full overflow-hidden relative">
+                    <img
+                      src={userImage}
+                      alt={username}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="flex flex-col w-[80%] md:w-[90%]">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-[0.95rem] md:text-[1rem] font-bold capitalize flex items-center gap-2">
+                        {username}
+
+                        <p
+                          className={`w-2 h-2 rounded-[10px] ${
+                            isOnline ? "bg-green-500" : "bg-gray-600"
+                          }`}
+                        ></p>
+                      </h2>
+                      <p className="text-[0.7rem] font-bold text-gray-400">
+                        {new Date(lastMessageTime).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <p className="text-[0.75rem] md:text-[0.8rem] text-gray-400">
+                      {lastMessage.length > 30
+                        ? `${lastMessage.substring(0, 30)}...`
+                        : lastMessage}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+          )
+        )}
+      </div>
+    </Wrapper>
+  );
+};
+
+const Wrapper = styled.div`
+  @keyframes loading-effect {
+    0% {
+      color: white;
+    }
+    25% {
+      color: gray;
+    }
+    50% {
+      color: white;
+    }
+    75% {
+      color: gray;
+    }
+    100% {
+      color: white;
+    }
+  }
+
+  .loading-effect {
+    animation: loading-effect 3s infinite;
+  }
+`;
+
+export default RecentMessage;
