@@ -1,0 +1,40 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Coverage / testing
+coverage/
+.cache/
+
+# OS files
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+
+# PM2 & other runtime files
+pids
+*.pid
+*.seed
+
+# Lock Mongo dump folders if any
+dump/
