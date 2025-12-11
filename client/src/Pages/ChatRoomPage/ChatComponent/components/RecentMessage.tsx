@@ -1,11 +1,12 @@
 import { toast } from "react-toastify";
 import styled from "styled-components";
-import { useDispatch } from "react-redux";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import type { AppDispatch } from "./../../../../Store";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "./../../../../Store";
 import {
   showActiveRoom,
+  setSearchFilter,
   showActiveUserPage,
   setSelectedUserDetails,
 } from "../../../../Feature/userSlice";
@@ -26,6 +27,7 @@ const RecentMessage = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [recentChats, setRecentChats] = useState<chatUi[]>([]);
+  const { searchFilter } = useSelector((store: RootState) => store.user);
 
   const fetchRecentChats = async () => {
     try {
@@ -40,6 +42,16 @@ const RecentMessage = () => {
 
       if (data.length === 0) {
         setMessage("No recent chats found");
+      }
+
+      if (searchFilter) {
+        const newGroup = data.filter((user: chatUi) =>
+          user.username.toLowerCase().includes(searchFilter.toLowerCase())
+        );
+
+        setRecentChats(newGroup);
+
+        return;
       }
 
       setRecentChats(data);
@@ -57,14 +69,14 @@ const RecentMessage = () => {
         toast.error("Network error. Please try again.");
       }
     } finally {
-      setMessage("");
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchRecentChats();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFilter]);
 
   return (
     <Wrapper>
@@ -109,6 +121,7 @@ const RecentMessage = () => {
                       })
                     );
                     dispatch(showActiveRoom());
+                    dispatch(setSearchFilter(""));
                   }}
                 >
                   <div className="w-[55px] h-[55px]  md:w-[65px] md:h-[65px] rounded-full overflow-hidden relative">

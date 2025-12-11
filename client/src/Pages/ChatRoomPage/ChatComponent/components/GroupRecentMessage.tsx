@@ -1,11 +1,12 @@
 import { toast } from "react-toastify";
 import styled from "styled-components";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import type { AppDispatch } from "./../../../../Store";
+import type { RootState, AppDispatch } from "./../../../../Store";
 import {
   showActiveRoom,
+  setSearchFilter,
   showActiveUserPage,
   setSelectedGroupDetails,
 } from "../../../../Feature/userSlice";
@@ -25,20 +26,35 @@ const GroupRecentMessage = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [recentChats, setRecentChats] = useState<chatUi[]>([]);
+  const { searchFilter } = useSelector((store: RootState) => store.user);
 
   const fetchRecentChats = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${url}/groups/active-group`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await axios.post(
+        `${url}/groups/active-group`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       const { data } = res;
 
       if (data.length === 0) {
         setMessage("No recent group chat found");
+      }
+
+      if (searchFilter) {
+        const newGroup = data.filter((group: chatUi) =>
+          group.groupName.toLowerCase().includes(searchFilter.toLowerCase())
+        );
+
+        setRecentChats(newGroup);
+
+        return;
       }
 
       setRecentChats(data);
@@ -56,14 +72,14 @@ const GroupRecentMessage = () => {
         toast.error("Network error. Please try again.");
       }
     } finally {
-      setMessage("");
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchRecentChats();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFilter]);
 
   return (
     <Wrapper>
@@ -81,7 +97,7 @@ const GroupRecentMessage = () => {
               className="w-[85%] md:w-[60%] text-[0.95rem] md:text-[1rem] text-gray-400 font-bold shadow shadow-gray-200  px-4 py-[0.4rem] rounded-[15px] border-gray-400   cursor-pointer transition duration-300 hover:bg-orange-700 hover:text-white"
               onClick={() => dispatch(showActiveUserPage())}
             >
-              See active users
+              See groups
             </button>
           </div>
         ) : (
@@ -107,6 +123,7 @@ const GroupRecentMessage = () => {
                       })
                     );
                     dispatch(showActiveRoom());
+                    dispatch(setSearchFilter(""));
                   }}
                 >
                   <div className="w-[55px] h-[55px]  md:w-[65px] md:h-[65px] rounded-full overflow-hidden relative">
