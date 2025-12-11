@@ -31,15 +31,11 @@ const GroupRecentMessage = () => {
   const fetchRecentChats = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(
-        `${url}/groups/active-group`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const res = await axios.get(`${url}/groups/active-group`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       const { data } = res;
 

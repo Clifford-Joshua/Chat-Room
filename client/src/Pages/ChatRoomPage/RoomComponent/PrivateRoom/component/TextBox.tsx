@@ -3,7 +3,7 @@ import { IoSend } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../../../Store";
 import { socket } from "../../../../../components/socket";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 import { toast } from "react-toastify";
 
@@ -36,14 +36,11 @@ const TextBox = () => {
       <form onSubmit={handleSentMessage}>
         <div className="flex  p-2 md:p-4 justify-between items-center">
           <div className="w-[85%] md:w-[90%] h-[35px] md:h-[45px] rounded-[10px] bg-gray-900  overflow-hidden">
-            <input
-              type="text"
+            <textarea
               name="message"
               value={message}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setMessage(e.target.value)
-              }
-              className="w-full h-full px-2 text-gray-500 text-[0.9rem] focus:text-white"
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full h-full p-2 text-gray-500 text-[0.9rem] focus:text-white resize-none"
               placeholder="Message......"
             />
           </div>

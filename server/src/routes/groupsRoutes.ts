@@ -10,7 +10,7 @@ import {
 } from "../controller/groupsController";
 import auth from "../middleware/authentication";
 
-router.post("/active-group", auth, activeGroup);
+router.get("/active-group", auth, activeGroup);
 router.post("/create-Group", auth, createGroup);
 router.get("/user-Groups", auth, getUserGroups);
 router.post("/groupImage", uploadGroupImage);

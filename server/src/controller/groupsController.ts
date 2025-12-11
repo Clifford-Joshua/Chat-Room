@@ -56,28 +56,30 @@ const getUserGroups = async (req: Request, res: Response) => {
 };
 
 const activeGroup = async (req: Request, res: Response) => {
-  const userId = req?.user?.userId;
+  // const userId = req?.user?.userId;
+  const username = req?.user?.username;
+
+  const userGroups = await Groups.find({
+    $or: [{ createdBy: username }, { members: username }],
+  }).select("_id");
+
+  const groupIds = userGroups.map((g) => (g._id as string).toString());
 
   const groupChat = await GroupMessages.aggregate([
     {
-      // only messages from groups the user belongs to
       $match: {
-        participants: userId, // or whatever field stores members
+        groupId: { $in: groupIds },
       },
     },
-    {
-      $sort: { createdAt: -1 },
-    },
+    { $sort: { createdAt: -1 } },
     {
       $group: {
-        _id: "$groupId", // ✅ group by group, not sender
+        _id: "$groupId",
         lastMessage: { $first: "$message" },
         lastMessageTime: { $first: "$createdAt" },
       },
     },
   ]);
-
-  const groupIds = groupChat.map((chat) => chat._id);
 
   const groups = await Groups.find({ _id: { $in: groupIds } });
 
@@ -95,7 +97,7 @@ const activeGroup = async (req: Request, res: Response) => {
     };
   });
 
-  res.status(StatusCodes.OK).json(result);
+  res.status(StatusCodes.OK).json({ result });
 };
 
 const getGroupMessages = async (req: Request, res: Response) => {
