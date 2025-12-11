@@ -26,8 +26,8 @@ initializeSocket(httpServer);
 app.use(express.static("./public"));
 
 const allowedOrigins = [
-  "http://localhost:5173", // local frontend
-  "https://chat-room-hg4k.onrender.com", // your deployed frontend
+  "https://chat-ro.netlify.app/",
+  "http://localhost:5173",
 ];
 
 app.use(
