@@ -25,10 +25,7 @@ initializeSocket(httpServer);
 
 app.use(express.static("./public"));
 
-const allowedOrigins = [
-  "https://chat-ro.netlify.app/",
-  "http://localhost:5173",
-];
+const allowedOrigins = ["https://chat-ro.netlify.app", "http://localhost:5173"];
 
 app.use(
   cors({
