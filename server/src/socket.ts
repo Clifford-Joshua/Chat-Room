@@ -28,7 +28,11 @@ const sendOnlineUsers = async (io: any) => {
 export const initializeSocket = (server: HttpServer) => {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: [
+        "*",
+        "https://chat-room-hg4k.onrender.com",
+        "http://localhost:5000",
+      ],
       methods: ["GET", "POST"],
     },
   });
